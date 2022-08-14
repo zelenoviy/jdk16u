@@ -538,6 +538,7 @@ LoadJavaVM(const char *jvmpath, InvocationFunctions *ifn)
     JLI_TraceLauncher("JVM path is %s\n", jvmpath);
 
     libjvm = dlopen(jvmpath, RTLD_NOW + RTLD_GLOBAL);
+
     if (libjvm == NULL) {
         JLI_ReportErrorMessage(DLL_ERROR1, __LINE__);
         JLI_ReportErrorMessage(DLL_ERROR2, jvmpath, dlerror());

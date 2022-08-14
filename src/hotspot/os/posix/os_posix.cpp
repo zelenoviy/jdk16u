@@ -59,7 +59,9 @@
 #include <sys/utsname.h>
 #include <time.h>
 #include <unistd.h>
-#include <utmpx.h>
+#ifndef __HAIKU__
+ #include <utmpx.h>
+#endif
 
 #define ROOT_UID 0
 
@@ -228,7 +230,7 @@ int os::create_file_for_heap(const char* dir) {
 
 static char* reserve_mmapped_memory(size_t bytes, char* requested_addr) {
   char * addr;
-  int flags = MAP_PRIVATE NOT_AIX( | MAP_NORESERVE ) | MAP_ANONYMOUS;
+  int flags = MAP_PRIVATE NOT_AIX( NOT_HAIKU( | MAP_NORESERVE )) | MAP_ANONYMOUS;
   if (requested_addr != NULL) {
     assert((uintptr_t)requested_addr % os::vm_page_size() == 0, "Requested address should be aligned to OS page size");
     flags |= MAP_FIXED;
@@ -247,6 +249,7 @@ static char* reserve_mmapped_memory(size_t bytes, char* requested_addr) {
   return NULL;
 }
 
+#ifndef __HAIKU__
 static int util_posix_fallocate(int fd, off_t offset, off_t len) {
 #ifdef __APPLE__
   fstore_t store = { F_ALLOCATECONTIG, F_PEOFPOSMODE, 0, len };
@@ -265,13 +268,19 @@ static int util_posix_fallocate(int fd, off_t offset, off_t len) {
   return posix_fallocate(fd, offset, len);
 #endif
 }
+#endif
 
 // Map the given address range to the provided file descriptor.
 char* os::map_memory_to_file(char* base, size_t size, int fd) {
+	fprintf(stdout,"os::map_memory_to_file(fd: %d, size: %ld)\n", fd, size);
   assert(fd != -1, "File descriptor is not valid");
 
   // allocate space for the file
-  int ret = util_posix_fallocate(fd, 0, (off_t)size);
+#ifdef __HAIKU__
+  int ret = ftruncate(fd, (off_t)size);
+#else
+   int ret = util_posix_fallocate(fd, 0, (off_t)size);
+#endif
   if (ret != 0) {
     vm_exit_during_initialization(err_msg("Error in mapping Java heap at the given filesystem directory. error(%d)", ret));
     return NULL;
@@ -421,6 +430,7 @@ void os::Posix::print_load_average(outputStream* st) {
 // boot/uptime information;
 // unfortunately it does not work on macOS and Linux because the utx chain has no entry
 // for reboot at least on my test machines
+#ifndef __HAIKU__
 void os::Posix::print_uptime_info(outputStream* st) {
   int bootsec = -1;
   int currsec = time(NULL);
@@ -437,6 +447,7 @@ void os::Posix::print_uptime_info(outputStream* st) {
     os::print_dhm(st, "OS uptime:", (long) (currsec-bootsec));
   }
 }
+#endif
 
 static void print_rlimit(outputStream* st, const char* msg,
                          int resource, bool output_k = false) {
@@ -473,7 +484,7 @@ void os::Posix::print_rlimit_info(outputStream* st) {
   st->print("%d", sysconf(_SC_CHILD_MAX));
 
   print_rlimit(st, ", THREADS", RLIMIT_THREADS);
-#else
+#elif !defined(HAIKU)
   print_rlimit(st, ", NPROC", RLIMIT_NPROC);
 #endif
 
@@ -1014,7 +1025,7 @@ bool os::Posix::handle_stack_overflow(JavaThread* thread, address addr, address 
                       "enabled executable stack (see man page execstack(8))");
 
   } else {
-#if !defined(AIX) && !defined(__APPLE__)
+#if !defined(AIX) && !defined(__APPLE__) && !defined(HAIKU)
     // bsd and aix don't have this
 
     // Accessing stack address below sp may cause SEGV if current
@@ -1033,7 +1044,7 @@ bool os::Posix::handle_stack_overflow(JavaThread* thread, address addr, address 
     }
 #else
     tty->print_raw_cr("SIGSEGV happened inside stack but outside yellow and red zone.");
-#endif // AIX or BSD
+#endif // AIX or BSD or HAIKU
   }
   return false;
 }

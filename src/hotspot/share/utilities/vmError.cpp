@@ -104,6 +104,9 @@ const char *env_list[] = {
   // defined on Windows
   "OS", "PROCESSOR_IDENTIFIER", "_ALT_JAVA_HOME_DIR",
 
+  // defined on Haiku
+  "LIBRARY_PATH",
+
   (const char *)0
 };
 
@@ -755,7 +758,7 @@ void VMError::report(outputStream* st, bool _verbose) {
        Thread* thread = ((NamedThread *)_thread)->processed_thread();
        if (thread != NULL && thread->is_Java_thread()) {
          JavaThread* jt = thread->as_Java_thread();
-         st->print_cr("JavaThread " PTR_FORMAT " (nid = %d) was being processed", p2i(jt), jt->osthread()->thread_id());
+         st->print_cr("JavaThread " PTR_FORMAT " (nid = " OSTHREADID_FORMAT ") was being processed", p2i(jt), jt->osthread()->thread_id());
          print_stack_trace(st, jt, buf, sizeof(buf), true);
        }
      }
@@ -1619,7 +1622,7 @@ void VMError::report_and_die(int id, const char* message, const char* detail_fmt
     const char* ptr = OnError;
     while ((cmd = next_OnError_command(buffer, sizeof(buffer), &ptr)) != NULL){
       out.print_raw   ("#   Executing ");
-#if defined(LINUX) || defined(_ALLBSD_SOURCE)
+#if defined(LINUX) || defined(_ALLBSD_SOURCE) || defined(HAIKU)
       out.print_raw   ("/bin/sh -c ");
 #elif defined(_WINDOWS)
       out.print_raw   ("cmd /C ");
@@ -1680,7 +1683,7 @@ void VM_ReportJavaOutOfMemory::doit() {
   const char* ptr = OnOutOfMemoryError;
   while ((cmd = next_OnError_command(buffer, sizeof(buffer), &ptr)) != NULL){
     tty->print("#   Executing ");
-#if defined(LINUX)
+#if defined(LINUX) || defined(HAIKU)
     tty->print  ("/bin/sh -c ");
 #endif
     tty->print_cr("\"%s\"...", cmd);

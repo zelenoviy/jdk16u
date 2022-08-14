@@ -294,7 +294,7 @@ Mutex::Mutex(int Rank, const char * name, bool allow_vm_block,
   _rank            = Rank;
   _safepoint_check_required = safepoint_check_required;
   _skip_rank_check = false;
-
+//fprintf(stderr,"Mutex::Mutex() name: %s, Rank: %d, Special: %d, sp_chk: %d, chk_never: %d\n", _name, _rank, special,_safepoint_check_required,_safepoint_check_never);	
   assert(_safepoint_check_required != _safepoint_check_sometimes || is_sometimes_ok(name),
          "Lock has _safepoint_check_sometimes %s", name);
 

@@ -85,15 +85,23 @@ ifeq ($(call isTargetOs, macosx), true)
   BUILD_LIBJAVA_java_props_macosx.c_CFLAGS := -x objective-c
 endif
 
+ifeq ($(call isTargetOs, haiku), true)
+  LIBJAVA_EXCLUDE_FILES += TimeZone_md.c
+endif
+
 $(eval $(call SetupJdkLibrary, BUILD_LIBJAVA, \
     NAME := java, \
+    EXCLUDE_FILES := $(LIBJAVA_EXCLUDE_FILES), \
     OPTIMIZATION := HIGH, \
     CFLAGS := $(CFLAGS_JDKLIB) \
+        $(LIBJAVA_CFLAGS), \
+    CXXFLAGS := $(CXXFLAGS_JDKLIB) \
         $(LIBJAVA_CFLAGS), \
     jdk_util.c_CFLAGS := $(VERSION_CFLAGS), \
     EXTRA_HEADER_DIRS := libfdlibm, \
     WARNINGS_AS_ERRORS_xlc := false, \
-    DISABLED_WARNINGS_gcc := unused-result unused-function, \
+    DISABLED_WARNINGS_gcc := unused-result unused-function \
+        stringop-truncation, \
     LDFLAGS := $(LDFLAGS_JDKLIB) \
         $(call SET_SHARED_LIBRARY_ORIGIN), \
     LDFLAGS_macosx := -L$(SUPPORT_OUTPUTDIR)/native/$(MODULE)/, \
@@ -105,6 +113,7 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBJAVA, \
     LIBS_macosx := -framework CoreFoundation \
         -framework Foundation \
         -framework SystemConfiguration, \
+    LIBS_haiku := -lnetwork -lbe, \
     LIBS_windows := jvm.lib \
         shell32.lib delayimp.lib \
         advapi32.lib version.lib, \
@@ -156,7 +165,7 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBJIMAGE, \
     CFLAGS_unix := -UDEBUG, \
     LDFLAGS := $(LDFLAGS_JDKLIB) $(LDFLAGS_CXX_JDK) \
         $(call SET_SHARED_LIBRARY_ORIGIN), \
-    LIBS_unix := -ljvm -ldl $(LIBCXX), \
+    LIBS_unix := -ljvm  $(LIBCXX), \
     LIBS_windows := jvm.lib, \
 ))
 
@@ -210,6 +219,7 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBJLI, \
     LIBS_linux := $(LIBDL) -lpthread, \
     LIBS_aix := $(LIBDL),\
     LIBS_macosx := -framework Cocoa -framework Security -framework ApplicationServices, \
+    LIBS_haiku := $(LIBZ), \
     LIBS_windows := advapi32.lib comctl32.lib user32.lib, \
 ))
 

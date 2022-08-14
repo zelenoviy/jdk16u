@@ -24,6 +24,7 @@
  */
 
 #include <string.h>
+#include <stdint.h>
 
 #include "AnyByte.h"
 

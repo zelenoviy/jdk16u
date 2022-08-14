@@ -24,7 +24,7 @@
  */
 
 #include <string.h>
-
+#include <stdint.h>
 #include "Any3Byte.h"
 
 /*

@@ -31,6 +31,7 @@ extern "C" {
 #endif
 
 #include <stddef.h>
+#include <stdint.h>
 #include "jni.h"
 
 #include "java_awt_AlphaComposite.h"

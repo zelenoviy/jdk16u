@@ -53,7 +53,7 @@ java.base_EXCLUDES += java/lang/doc-files
 # data files and shouldn't go in the product
 java.base_EXCLUDE_FILES += sun/text/resources/BreakIteratorRules.java
 
-ifeq ($(call isTargetOs, macosx aix), false)
+ifeq ($(call isTargetOs, macosx aix haiku), false)
   java.base_EXCLUDE_FILES += sun/nio/fs/PollingWatchService.java
 endif
 
@@ -117,8 +117,8 @@ java.desktop_EXCLUDE_FILES += \
     .template \
     #
 
-ifeq ($(call isTargetOs, macosx), true)
-  # exclude all X11 on Mac.
+ifeq ($(call isTargetOs, macosx haiku), true)
+  # exclude all X11 on Mac and Haiku.
   java.desktop_EXCLUDES += \
       sun/awt/X11 \
       sun/java2d/x11 \
@@ -375,6 +375,10 @@ ifeq ($(call isTargetOs, macosx), true)
 endif
 
 ifeq ($(call isTargetOs, aix), true)
+  jdk.sctp_EXCLUDE_FILES += $(SCTP_IMPL_CLASSES)
+endif
+
+ifeq ($(call isTargetOs, haiku), true)
   jdk.sctp_EXCLUDE_FILES += $(SCTP_IMPL_CLASSES)
 endif
 

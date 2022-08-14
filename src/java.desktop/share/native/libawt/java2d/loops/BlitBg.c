@@ -23,6 +23,8 @@
  * questions.
  */
 
+#include <stdint.h>
+
 #include "GraphicsPrimitiveMgr.h"
 #include "Region.h"
 
